@@ -6,6 +6,10 @@ executors:
   - name: clip_t
     uses:
       jtype: CLIPEncoder
+      with:
+        device: cpu
+        download_root: /Chinese-CLIP
+        name: CN-CLIP/ViT-L-14-336
       metas:
         py_modules:
           - clip_server.executors.clip_torch

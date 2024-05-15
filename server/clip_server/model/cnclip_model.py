@@ -22,13 +22,14 @@ class CNClipModel(CLIPModel):
         device: str = 'cpu',
         jit: bool = False,
         dtype: str = None,
+        download_root: str = None,
         **kwargs
     ):
         super().__init__(name, **kwargs)
         self._name = _CNCLIP_MODEL_MAPS[name]
 
         self._model, self._preprocess = load_from_name(
-            _CNCLIP_MODEL_MAPS[name], device=device
+            _CNCLIP_MODEL_MAPS[name], device=device, download_root=download_root
         )
         self._model.eval()
 
