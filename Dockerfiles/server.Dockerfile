@@ -16,9 +16,6 @@ LABEL org.opencontainers.image.vendor="Jina AI Limited" \
       org.opencontainers.image.authors="hello@jina.ai" \
       org.opencontainers.image.url="clip-as-service" \
       org.opencontainers.image.documentation="https://clip-as-service.jina.ai/"
-ENV http_proxy=http://192.168.2.50:7890
-ENV https_proxy=http://192.168.2.50:7890
-ENV no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-pip wget \
@@ -37,9 +34,6 @@ ARG PIP_TAG
 RUN pip install --default-timeout=1000 --compile ./server/ \
     && if [ -n "${PIP_TAG}" ]; then pip install --default-timeout=1000 --compile "./server[${PIP_TAG}]" ; fi
 
-ENV http_proxy=
-ENV https_proxy=
-ENV no_proxy=
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
 ARG USER_ID=1000
