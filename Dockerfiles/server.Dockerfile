@@ -25,14 +25,15 @@ RUN apt-get update \
     && pip install wheel setuptools nvidia-pyindex \
     && pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu121
 
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 RUN apt-get clean
-RUN pip install cn_clip
+RUN pip install cn_clip -i ${PIP_INDEX_URL}
 
 COPY server ./server
 # given by builder
 ARG PIP_TAG
-RUN pip install --default-timeout=1000 --compile ./server/ \
-    && if [ -n "${PIP_TAG}" ]; then pip install --default-timeout=1000 --compile "./server[${PIP_TAG}]" ; fi
+RUN pip install -i ${PIP_INDEX_URL} --default-timeout=1000 --compile ./server/ \
+    && if [ -n "${PIP_TAG}" ]; then pip install -i ${PIP_INDEX_URL} --default-timeout=1000 --compile "./server[${PIP_TAG}]" ; fi
 
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
