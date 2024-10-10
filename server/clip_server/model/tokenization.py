@@ -17,6 +17,7 @@ class Tokenizer:
             import cn_clip.clip as cnclip
 
             self._tokenizer = cnclip
+            self._modeltype = kwargs.get('modeltype', 'Not provided')
         else:
             from clip_server.model.simple_tokenizer import SimpleTokenizer
 
@@ -66,10 +67,17 @@ class Tokenizer:
                 'attention_mask': result['attention_mask'],
             }
         elif self._name in _CNCLIP_MODELS:
-            result = self._tokenizer.tokenize(
-                texts=texts,
-                context_length=52,  # in all cnclip baseline model context length is 52
-            )
+            # 2024-09-27 modfied by jili, support om model 512 context length
+            if self._modeltype == "om":
+                result = self._tokenizer.tokenize(
+                    texts=texts,
+                    context_length=512,  # in all cnclip om baseline model context length is 512
+                )
+            else:
+                result = self._tokenizer.tokenize(
+                    texts=texts,
+                    context_length=52,  # in all cnclip baseline model context length is 52
+                )
             attn_mask = result.clone()
             attn_mask[result != 0] = 1
             return {

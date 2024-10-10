@@ -36,9 +36,14 @@ class CLIPModel(BaseCLIPModel):
 
                 instance = super().__new__(MultilingualCLIPModel)
             elif name in _CNCLIP_MODELS:
-                from clip_server.model.cnclip_model import CNClipModel
+                if kwargs.get('modeltype', 'Not provided') == "om":
+                    from clip_server.model.cnclip_om_model import CNClipOmModel
+                    
+                    instance = super().__new__(CNClipOmModel)
+                else:
+                    from clip_server.model.cnclip_model import CNClipModel
 
-                instance = super().__new__(CNClipModel)
+                    instance = super().__new__(CNClipModel)
             else:
                 raise ValueError(
                     'CLIP model {} not found; below is a list of all available models:\n{}'.format(
