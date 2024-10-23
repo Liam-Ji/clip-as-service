@@ -40,8 +40,8 @@ class CNClipOmModel(CLIPModel):
         #     print(line.strip())
         text_model = kwargs.get('text_model', 'Not provided')
         image_model = kwargs.get('image_model', 'Not provided')
-        model_device = kwargs.get('model_device', 'npu:0')
-        device_id = int(model_device.split(':')[1])
+        # model_device = kwargs.get('model_device', 'npu:0')
+        device_id = int(device.split(':')[1])
 
         if download_root:
             if text_model != 'Not provided':

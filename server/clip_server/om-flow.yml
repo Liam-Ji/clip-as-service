@@ -5,139 +5,21 @@ with:
   # protocol: http
   # cors: True
 executors:
-  - name: clip_om1
+  - name: clip_om
     uses:
       jtype: CLIPEncoder
       with:
         device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
+        download_root: /root/NDIVLM/ndivlm/models/cnclip-base
         name: CN-CLIP/ViT-B-16
         modeltype: om
         text_model: vit-b-16.txt.bs24.om
         image_model: vit-b-16.img.bs24.om
         model_device: npu:0
         context_length: 512
+        device_list: [0, 1, 2, 3, 4, 5, 6, 7]
       metas:
         py_modules:
           - clip_server.executors.clip_om
     timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om2
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:1
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om3
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:2
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om4
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:3
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om5
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:4
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om6
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:5
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om7
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:6
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
-  - name: clip_om8
-    uses:
-      jtype: CLIPEncoder
-      with:
-        device: cpu
-        download_root: /root/NDIVLM/ModelZoo-PyTorch/ACL_PyTorch/built-in/foundation_models/Chinese_CLIP/models
-        name: CN-CLIP/ViT-B-16
-        modeltype: om
-        text_model: vit-b-16.txt.bs24.om
-        image_model: vit-b-16.img.bs24.om
-        model_device: npu:7
-        context_length: 512
-      metas:
-        py_modules:
-          - clip_server.executors.clip_om
-    timeout_ready: 3000000
-    replicas: 4
+    replicas: 2

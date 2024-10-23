@@ -2,7 +2,7 @@ import os
 import warnings
 from functools import partial
 from multiprocessing.pool import ThreadPool
-from typing import Dict, Union, Optional
+from typing import Dict, Union, Optional, List
 
 import numpy as np
 import torch
@@ -18,6 +18,9 @@ from clip_server.model.clip_model import CLIPModel
 from clip_server.model.tokenization import Tokenizer
 from jina import DocumentArray, Executor, requests
 from opentelemetry.trace import NoOpTracer, Span
+import tempfile
+from filelock import FileLock
+import json
 
 
 class CLIPEncoder(Executor):
@@ -30,6 +33,7 @@ class CLIPEncoder(Executor):
         minibatch_size: int = 24,
         access_paths: str = '@r',
         dtype: Optional[Union[str, torch.dtype]] = None,
+        device_list: Optional[List[int]] = None,
         **kwargs,
     ):
         """
@@ -87,22 +91,70 @@ class CLIPEncoder(Executor):
         #     torch.set_num_threads(max(num_threads, 1))
         #     torch.set_num_interop_threads(1)
 
+        if device_list is not None:
+            self.TEMP_DIR_NAME = 'CLIPEncoder'
+            self.device_list = device_list
+            self.temp_dir = self._get_or_create_temp_dir()
+            self.index_file = os.path.join(self.temp_dir, 'replica_index.json')
+            self.replica_index = self._get_replica_index()
+            self.model_device = f"npu:{self.device_list[self.replica_index]}"
+            print(f"[INFO] Initialized CLIPEncoder replica with index {self.replica_index} using device {self.model_device}")
+        else:
+            self.model_device = kwargs.get('model_device')
+            if self.model_device is None:
+                raise ValueError("Either 'device_list' or 'model_device' must be provided.")
+            print(f"[INFO] Initialized CLIPEncoder using device {self.model_device}")
+
         self._num_worker_preprocess = num_worker_preprocess
         self._pool = ThreadPool(processes=num_worker_preprocess)
 
         self._model = CLIPModel(
-            name, device=self._device, jit=jit, dtype=dtype, **kwargs
+            name, device=self.model_device, jit=jit, dtype=dtype, **kwargs
         ) # 这个地方调用CNClipOmModel.__init__
 
         self._tokenizer = Tokenizer(name, **kwargs)
         self._image_transform = clip._transform_blob(self._model.image_size)
         # print(self._model.image_size)
         # print(self._image_transform)
-        self.model_device = kwargs.get('model_device', 'not provided')
+        # self.model_device = kwargs.get('model_device', 'not provided')
 
         if not self.tracer:
             self.tracer = NoOpTracer()
+    def _get_or_create_temp_dir(self):
+        temp_root = tempfile.gettempdir()
+        temp_dir = os.path.join(temp_root, self.TEMP_DIR_NAME)
+        lock_file = os.path.join(temp_root, f"{self.TEMP_DIR_NAME}.lock")
 
+        with FileLock(lock_file):
+            if not os.path.exists(temp_dir):
+                os.makedirs(temp_dir)
+                print(f"[INFO] Created shared directory: {temp_dir}")
+            else:
+                print(f"[INFO] Using existing shared directory: {temp_dir}")
+        
+        return temp_dir
+    def _get_replica_index(self):
+        lock_file = f"{self.index_file}.lock"
+        with FileLock(lock_file):
+            if os.path.exists(self.index_file):
+                with open(self.index_file, 'r') as f:
+                    index_data = json.load(f)
+                    current_index = index_data['current_index']
+                    total_replicas = index_data['total_replicas']
+            else:
+                current_index = 0
+                total_replicas = 0
+
+            next_index = (current_index + 1) % len(self.device_list)
+            
+            with open(self.index_file, 'w') as f:
+                json.dump({
+                    'current_index': next_index,
+                    'total_replicas': total_replicas + 1
+                }, f)
+
+            print(f"[INFO] Assigned replica index: {current_index}")
+            return current_index
     def _preproc_images(self, docs: 'DocumentArray', drop_image_content: bool):
         with self.monitor(
             name='preprocess_images_seconds',
